@@ -209,6 +209,34 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_numbers(0, 1000),
         ),
+        LocalTuyaEntity(
+            id=DPCode.MOTION_SENSITIVITY_VALUE,
+            name="Motion sensitivity",
+            icon="mdi:motion-sensor",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 5),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MOTIONLESS_SENSITIVITY,
+            name="Motionless sensitivity",
+            icon="mdi:motion-sensor",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 5),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PRESENCE_TIME,
+            name="Presence hold time",
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 65535, 1, 1, UnitOfTime.MINUTES),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.NO_ONE_TIME,
+            name="No presence delay",
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(10, 10000, 1, 1, UnitOfTime.SECONDS),
+        ),
     ),
     # Coffee maker
     # https://developer.tuya.com/en/docs/iot/categorykfj?id=Kaiuz2p12pc7f
@@ -292,6 +320,13 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB1 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN_LED,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Night light Timer",
             custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(

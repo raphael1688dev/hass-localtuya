@@ -906,6 +906,16 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     ),
     # Humidifier
     # https://developer.tuya.com/en/docs/iot/categoryjsq?id=Kaiuz1smr440b
+    # Human Presence Sensor
+    # https://developer.tuya.com/en/docs/iot/categoryhps?id=Kaiuz42yhn1hs
+    "hps": (
+        LocalTuyaEntity(
+            id=DPCode.INDICATOR,
+            name="Indicator",
+            icon="mdi:led-on",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
     "jsq": (
         LocalTuyaEntity(
             id=DPCode.SWITCH_SOUND,

@@ -243,6 +243,7 @@ class DPCode(StrEnum):
     COUNTDOWN_5 = "countdown_5"  # Countdown 5
     COUNTDOWN_6 = "countdown_6"  # Countdown 6
     COUNTDOWN_LEFT = "countdown_left"
+    COUNTDOWN_LED = "countdown_led"  # Night light countdown
     COUNTDOWN_SET = "countdown_set"  # Countdown setting
     COUNTDOWN_USB = "countdown"  # Countdown
     COUNTDOWN_USB1 = "countdown_usb1"  # Countdown USBS 1
@@ -403,6 +404,7 @@ class DPCode(StrEnum):
     HUM_SENSITIVITY = "hum_sensitivity"
     IDU_ERROR = "idu_error"
     ILLUMINANCE_VALUE = "illuminance_value"
+    INDICATOR = "indicator"  # Status indicator light
     INDICATOR_LIGHT = "indicator_light"
     INNERDRY = "innerdry"
     INSTALLATION_HEIGHT = "installation_height"
@@ -481,8 +483,10 @@ class DPCode(StrEnum):
     MOTION_INTERVAL = "motion_interval"
     MOTION_RECORD = "motion_record"
     MOTION_SENSITIVITY = "motion_sensitivity"
+    MOTION_SENSITIVITY_VALUE = "motion_sensitivity_value"
     MOTION_SWITCH = "motion_switch"  # Motion switch
     MOTION_TRACKING = "motion_tracking"
+    MOTIONLESS_SENSITIVITY = "motionless_sensitivity"
     MOTOR_MODE = "motor_mode"
     MOVEMENT_DETECT_PIC = "movement_detect_pic"
     MUFFLING = "muffling"  # Muffling
@@ -491,6 +495,7 @@ class DPCode(StrEnum):
     NEAR_DETECTION = "near_detection"
     NETWORK_MODEL = "network_model"
     NET_STATE = "net_state"
+    NO_ONE_TIME = "no_one_time"  # Presence: time without anyone before reporting none
     NORMAL_OPEN_SWITCH = "normal_open_switch"
     NOTIFICATION_STATUS = "notification_status"
     OCPP_TLS = "ocpp_tls"
@@ -559,6 +564,7 @@ class DPCode(StrEnum):
     POWER_TYPE1 = "power_type1"
     POWER_TYPE2 = "power_type2"
     PRESENCE_STATE = "presence_state"
+    PRESENCE_TIME = "presence_time"  # Presence: hold time
     PRESSURE_STATE = "pressure_state"
     PRESSURE_UNIT_CONVERT = "pressure_unit_convert"
     PRESSURE_VALUE = "pressure_value"

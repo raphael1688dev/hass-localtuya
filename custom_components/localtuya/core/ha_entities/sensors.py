@@ -332,6 +332,25 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     ),
     # Formaldehyde Detector
     # Note: Not documented
+    # Human Presence Sensor
+    # https://developer.tuya.com/en/docs/iot/categoryhps?id=Kaiuz42yhn1hs
+    "hps": (
+        LocalTuyaEntity(
+            id=DPCode.DIS_CURRENT,
+            name="Distance",
+            icon="mdi:signal-distance-variant",
+            device_class=SensorDeviceClass.DISTANCE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfLength.CENTIMETERS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ILLUMINANCE_VALUE,
+            name="Illuminance",
+            device_class=SensorDeviceClass.ILLUMINANCE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(LIGHT_LUX),
+        ),
+    ),
     "jqbj": (
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,

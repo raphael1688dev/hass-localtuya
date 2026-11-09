@@ -420,11 +420,19 @@ LIGHTS["wxkg"] = LIGHTS["tgkg"]
 
 # Socket (duplicate of `kg`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
-LIGHTS["cz"] = LIGHTS["kg"]
+# Night light on sockets / power strips, e.g. LQ-C01 (Not documented in the standard set).
+SOCKET_NIGHT_LIGHT = LocalTuyaEntity(
+    id=DPCode.SWITCH_LED,
+    name="Night light",
+    color_mode=DPCode.WORK_MODE,
+    brightness=DPCode.BRIGHT_VALUE,
+    custom_configs=localtuya_light(25, 255, 2700, 6500, False, False),
+)
+LIGHTS["cz"] = (*LIGHTS["kg"], SOCKET_NIGHT_LIGHT)
 
 # Power Socket (duplicate of `kg`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
-LIGHTS["pc"] = LIGHTS["kg"]
+LIGHTS["pc"] = (*LIGHTS["kg"], SOCKET_NIGHT_LIGHT)
 
 # Dehumidifier
 # https://developer.tuya.com/en/docs/iot/categorycs?id=Kaiuz1vcz4dha

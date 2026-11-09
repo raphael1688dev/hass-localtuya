@@ -213,3 +213,52 @@ async def test_auto_configure():
     category = COVER_DEVICE_DATA["device_cloud_info"]["category"]
     entities = gen_localtuya_entities(COVER_DEVICE_DATA["device_config"], category)
     assert len(entities) > 4
+
+
+def by_id(entities: list[dict]) -> dict[str, dict]:
+    return {str(e["id"]): e for e in entities}
+
+
+async def test_auto_configure_human_presence_sensor():
+    """Presence sensor (hps) also gets distance, illuminance, timings and indicator."""
+    dps = [
+        "1 ( code: presence_state , value: none )",
+        "4 ( code: far_detection , value: 600 )",
+        "12 ( code: presence_time , value: 0 )",
+        "15 ( code: motion_sensitivity_value , value: 5 )",
+        "16 ( code: motionless_sensitivity , value: 5 )",
+        "19 ( code: dis_current , value: 238 )",
+        "20 ( code: illuminance_value , value: 710 )",
+        "24 ( code: indicator , value: True )",
+        "101 ( code: no_one_time , value: 60 )",
+    ]
+    entities = by_id(gen_localtuya_entities({"friendly_name": "Presence", "dps_strings": dps}, "hps"))
+
+    assert set(entities) == {"1", "4", "12", "15", "16", "19", "20", "24", "101"}
+    assert entities["19"]["platform"] == "sensor"
+    assert entities["20"]["platform"] == "sensor"
+    assert entities["24"]["platform"] == "switch"
+    assert entities["101"]["platform"] == "number"
+
+
+async def test_auto_configure_socket_night_light():
+    """A socket with a night light (switch_led) gets a light and its timer."""
+    dps = [
+        "1 ( code: switch_1 , value: False )",
+        "9 ( code: countdown_1 , value: 0 )",
+        "27 ( code: switch_led , value: False )",
+        "28 ( code: work_mode , value: white )",
+        "29 ( code: bright_value , value: 255 )",
+        "37 ( code: countdown_led , value: 0 )",
+    ]
+    entities = by_id(gen_localtuya_entities({"friendly_name": "Plug", "dps_strings": dps}, "cz"))
+
+    light = entities["27"]
+    assert light["platform"] == "light"
+    assert light["brightness"] == "29"
+    assert light["color_mode"] == "28"
+    assert entities["37"]["platform"] == "number"
+
+    # Sockets without a night light are unchanged.
+    plain = by_id(gen_localtuya_entities({"friendly_name": "Plug", "dps_strings": dps[:2]}, "cz"))
+    assert set(plain) == {"1", "9"}
