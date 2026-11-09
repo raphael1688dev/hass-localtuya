@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Coroutine, Callable
 
-from homeassistant.core import HomeAssistant, State
+from homeassistant.core import HomeAssistant, State, callback
 from homeassistant.config_entries import ConfigEntry
 
 from homeassistant.const import (
@@ -84,6 +84,7 @@ async def async_setup_entry(
         if entities_to_setup:
             device: TuyaDevice = hass_entry_data.devices[device_key]
             dps_config_fields = list(get_dps_for_platform(flow_schema))
+            device_entities = []
 
             for entity_config in entities_to_setup:
                 # Add DPS used by this platform to the request list
@@ -91,7 +92,7 @@ async def async_setup_entry(
                     if dp_conf in entity_config:
                         device.dps_to_request[entity_config[dp_conf]] = None
 
-                entities.append(
+                device_entities.append(
                     entity_class(
                         device,
                         dev_entry,
@@ -100,9 +101,12 @@ async def async_setup_entry(
                         add_entites_callback=async_add_entities,
                     )
                 )
-    # Once the entities have been created, add to the TuyaDevice instance
+
+            # Once the entities have been created, add to the TuyaDevice instance
+            device.add_entities(device_entities)
+            entities.extend(device_entities)
+
     if entities:
-        device.add_entities(entities)
         async_add_entities(entities)
 
         if async_setup_services:
@@ -170,6 +174,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             self._stored_states = stored_data
             self.status_restored(stored_data)
 
+        @callback
         def _update_handler(status: dict | None):
             """Update entity state when status was updated."""
             last_status = self._status.copy()
@@ -184,7 +189,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 if status:
                     self.status_updated()
 
-                self.schedule_update_ha_state()
+                self.async_write_ha_state()
 
         signal = f"localtuya_{self._device_config.id}"
 
@@ -226,11 +231,15 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         if self._device.is_subdevice and self._device.id != self._device.gateway.id:
             gateway_identifier = (DOMAIN, f"local_{self._device.gateway.id}")
             if hasattr(dr, "async_get_device_id_by_identifier"):
-                device_info["via_device_id"] = dr.async_get_device_id_by_identifier(
-                    self.hass,
-                    gateway_identifier,
-                    config_entry_id=self._device._entry.entry_id,
-                )
+                try:
+                    device_info["via_device_id"] = dr.async_get_device_id_by_identifier(
+                        self.hass,
+                        gateway_identifier,
+                        config_entry_id=self._device._entry.entry_id,
+                    )
+                except ValueError:
+                    # The gateway is not registered (yet), link it on a later setup.
+                    pass
             else:
                 # Backwards compatibility with Home Assistant < 2026.8.
                 device_info["via_device"] = gateway_identifier

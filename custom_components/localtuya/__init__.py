@@ -420,11 +420,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Tuya platforms."""
     # Unload the platforms.
-    await hass.config_entries.async_unload_platforms(entry, PLATFORMS.values())
-    hass.data[DOMAIN].pop(entry.entry_id)
+    unload_ok = await hass.config_entries.async_unload_platforms(
+        entry, PLATFORMS.values()
+    )
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id, None)
+        _LOGGER.info("Unload completed")
 
-    _LOGGER.info("Unload completed")
-    return True
+    return unload_ok
 
 
 async def update_listener(hass: HomeAssistant, config_entry: ConfigEntry):

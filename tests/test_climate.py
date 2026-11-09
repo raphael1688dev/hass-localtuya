@@ -106,8 +106,8 @@ async def test_climate():
     assert entity_1.fan_modes == FAN_SPEED_LIST
     assert entity_2.fan_modes == list(FAN_SPEED_DICT.values())
     assert entity_1.preset_mode == "Holiday Friendly Name"
-    assert entity_1.current_temperature == 24
-    assert entity_1.target_temperature == 20  # f to c
+    assert entity_1.native_current_temperature == 24
+    assert entity_1.native_target_temperature == 20  # f to c
     assert entity_1.fan_mode == "middle"
 
     # Eco Preset

@@ -49,17 +49,6 @@ async def test_base64_status_creates_sub_sensors(monkeypatch):
         "custom_components.localtuya.sensor.er.async_get", lambda hass: MagicMock()
     )
 
-    # Sub-sensor creation is scheduled on the event loop; run it synchronously.
-    def run_coro(coro, **kwargs):
-        try:
-            coro.send(None)
-        except StopIteration:
-            pass
-
-    sensor.hass.async_create_task = run_coro
-    sensor.hass.loop = MagicMock()
-    sensor.hass.loop.call_soon_threadsafe = lambda func, *args, **kwargs: func(*args)
-
     device.status_updated({"6": PHASE_B64})
 
     assert len(created) == 3

@@ -414,8 +414,9 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def color_mode(self) -> ColorMode:
         """Return the color_mode of the light."""
-        if len(self.supported_color_modes) == 1:
-            return next(iter(self.supported_color_modes))
+        supported_color_modes = self.supported_color_modes
+        if len(supported_color_modes) == 1:
+            return next(iter(supported_color_modes))
 
         if self.is_color_mode:
             return ColorMode.HS
@@ -424,10 +425,18 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 return ColorMode.COLOR_TEMP
             else:
                 return ColorMode.WHITE
-        if self._brightness:
-            return ColorMode.BRIGHTNESS
 
-        return ColorMode.ONOFF
+        # Scene/music modes: HA only accepts brightness/onoff while an effect is active,
+        # otherwise the color mode must be one of the supported color modes.
+        color_mode = ColorMode.BRIGHTNESS if self._brightness else ColorMode.ONOFF
+        if self.effect is not None:
+            return color_mode
+
+        for fallback in (ColorMode.COLOR_TEMP, ColorMode.WHITE, ColorMode.HS):
+            if fallback in supported_color_modes:
+                return fallback
+
+        return color_mode
 
     def __is_color_rgb_encoded(self):
         # for now we will prefer non encoded if color is none "added by manual or cloud pull dp"

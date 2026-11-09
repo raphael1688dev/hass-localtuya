@@ -46,6 +46,9 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Home Assistant 2026.11 renamed the temperature properties to native_*.
+_LEGACY_TEMPERATURE_API = not hasattr(WaterHeaterEntity, "native_temperature_unit")
+
 
 TEMPERATURE_CELSIUS = "celsius"
 TEMPERATURE_FAHRENHEIT = "fahrenheit"
@@ -106,6 +109,8 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         self._state = None
         self._target_temperature = None
         self._current_temperature = None
+        self._target_temperature_high = None
+        self._target_temperature_low = None
         self._dp_mode = self._config.get(CONF_MODE_DP, None)
 
         self._available_modes = DictSelector(self._config.get(CONF_MODES, {}))
@@ -134,7 +139,7 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         return self._precision
 
     @property
-    def temperature_unit(self):
+    def native_temperature_unit(self):
         """Return the unit of measurement used by the platform."""
         return config_unit(self._config.get(CONF_TEMPERATURE_UNIT))
 
@@ -154,24 +159,36 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         return self._available_modes.names + [OFF_MODE]
 
     @property
-    def current_temperature(self):
+    def native_current_temperature(self):
         """Return the current temperature."""
         return self._current_temperature
 
     @property
-    def target_temperature(self):
+    def native_target_temperature(self):
         """Return the temperature we try to reach."""
         return self._target_temperature
 
     @property
-    def target_temperature_high(self) -> float | None:
+    def native_target_temperature_high(self) -> float | None:
         """Return the highbound target temperature we try to reach."""
-        return self._attr_target_temperature_high
+        return self._target_temperature_high
 
     @property
-    def target_temperature_low(self) -> float | None:
+    def native_target_temperature_low(self) -> float | None:
         """Return the lowbound target temperature we try to reach."""
-        return self._attr_target_temperature_low
+        return self._target_temperature_low
+
+    if _LEGACY_TEMPERATURE_API:
+        # Backwards compatibility with Home Assistant < 2026.11.
+        temperature_unit = property(lambda self: self.native_temperature_unit)
+        current_temperature = property(lambda self: self.native_current_temperature)
+        target_temperature = property(lambda self: self.native_target_temperature)
+        target_temperature_high = property(
+            lambda self: self.native_target_temperature_high
+        )
+        target_temperature_low = property(
+            lambda self: self.native_target_temperature_low
+        )
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
@@ -225,12 +242,12 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         if (
             target_high := self.dp_value(CONF_TARGET_TEMPERATURE_HIGH_DP)
         ) or target_high is not None:
-            self._attr_target_temperature_high = target_high
+            self._target_temperature_high = target_high
 
         if (
             target_low := self.dp_value(CONF_TARGET_TEMPERATURE_LOW_DP)
         ) or target_low is not None:
-            self._attr_target_temperature_low = target_low
+            self._target_temperature_low = target_low
 
 
 async_setup_entry = partial(

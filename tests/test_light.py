@@ -82,3 +82,20 @@ async def test_light():
 
     # Bluetooth
     # device.status_updated({"21": "colour", "24": "AHhkZA==", "25": ""})
+
+
+async def test_light_scene_mode_without_effect():
+    """Scene mode without a configured scene must still report a supported color mode."""
+    config = {DEVICE_NAME: {**CONFIG[DEVICE_NAME], "entities": []}}
+    light_config = {**CONFIG[DEVICE_NAME]["entities"][0]}
+    light_config.pop("scene")
+    light_config.pop("music_mode")
+    config[DEVICE_NAME]["entities"] = [light_config]
+
+    device = await init(config, PLATFORM_DOMAIN, LocalTuyaLight)
+    entity_1, *_ = get_entites(device)
+
+    device.status_updated({**DPS_STATUS, "21": "scene"})
+    assert entity_1.is_scene_mode
+    assert entity_1.effect is None
+    assert entity_1.color_mode in entity_1.supported_color_modes

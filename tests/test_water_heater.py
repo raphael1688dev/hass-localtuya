@@ -62,15 +62,15 @@ async def test_water_heater():
     assert entity_1.state == entity_1_cfg[CONF_MODES].get(
         DPS_STATUS.get(entity_1_cfg[CONF_MODE_DP]), False
     )
-    assert entity_1.target_temperature == DPS_STATUS.get(
+    assert entity_1.native_target_temperature == DPS_STATUS.get(
         entity_1_cfg[CONF_TARGET_TEMPERATURE_DP], False
     )
-    assert entity_1.target_temperature_low == DPS_STATUS.get(
+    assert entity_1.native_target_temperature_low == DPS_STATUS.get(
         entity_1_cfg[CONF_TARGET_TEMPERATURE_LOW_DP], False
     )
-    assert entity_1.target_temperature_high == DPS_STATUS.get(
+    assert entity_1.native_target_temperature_high == DPS_STATUS.get(
         entity_1_cfg[CONF_TARGET_TEMPERATURE_HIGH_DP], False
     )
-    assert entity_1.current_temperature == DPS_STATUS.get(
+    assert entity_1.native_current_temperature == DPS_STATUS.get(
         entity_1_cfg[CONF_CURRENT_TEMPERATURE_DP], False
     )

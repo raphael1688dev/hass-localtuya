@@ -62,6 +62,9 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Home Assistant 2026.11 renamed the temperature properties to native_*.
+_LEGACY_TEMPERATURE_API = not hasattr(ClimateEntity, "native_temperature_unit")
+
 
 HVAC_OFF = {HVACMode.OFF.value: "off"}  # Migrate to 3
 RENAME_HVAC_MODE_SETS = {  # Migrate to 3
@@ -297,7 +300,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         return self._precision
 
     @property
-    def temperature_unit(self):
+    def native_temperature_unit(self):
         """Return the unit of measurement used by the platform."""
         return self._temperature_unit
 
@@ -402,14 +405,20 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         return presets
 
     @property
-    def current_temperature(self):
+    def native_current_temperature(self):
         """Return the current temperature."""
         return self._current_temperature
 
     @property
-    def target_temperature(self):
+    def native_target_temperature(self):
         """Return the temperature we try to reach."""
         return self._target_temperature
+
+    if _LEGACY_TEMPERATURE_API:
+        # Backwards compatibility with Home Assistant < 2026.11.
+        temperature_unit = property(lambda self: self.native_temperature_unit)
+        current_temperature = property(lambda self: self.native_current_temperature)
+        target_temperature = property(lambda self: self.native_target_temperature)
 
     @property
     def target_temperature_step(self):

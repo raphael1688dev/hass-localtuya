@@ -289,6 +289,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
             if self._unsub_new_entity is None:
 
+                @callback
                 def _new_entity_handler(entity_id):
                     self.debug(f"New entity {entity_id} was added to {host}")
                     self._dispatch_status()

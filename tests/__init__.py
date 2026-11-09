@@ -1,6 +1,7 @@
 """Init localtuya tests"""
 
 import asyncio
+import inspect
 import homeassistant.util.ulid as ulid_util
 import os, sys
 import pytest
@@ -64,7 +65,7 @@ async def init(config: dict[str, dict[str, Any]], entity_domain, entity_class):
 
 
 def create_entry(config: dict[str, dict[str, Any]]):
-    return {
+    entry = {
         "data": {"devices": config},
         "disabled_by": None,
         "discovery_keys": None,
@@ -79,6 +80,10 @@ def create_entry(config: dict[str, dict[str, Any]]):
         "version": 1,
         "source": "user",
     }
+    # Home Assistant 2025.2+ requires subentries_data.
+    if "subentries_data" in inspect.signature(ConfigEntry.__init__).parameters:
+        entry["subentries_data"] = ()
+    return entry
 
 
 def get_entites(device: coordinator.TuyaDevice):

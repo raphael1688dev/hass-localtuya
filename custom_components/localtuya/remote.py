@@ -91,6 +91,9 @@ SEND_DEFAULTS = (
 
 CODE_STORAGE_VERSION = 1
 SOTRAGE_KEY = "localtuya_remotes_codes"
+# hass.data key: remote entities of all config entries, used by the remote_add_code service.
+DATA_REMOTE_ENTITIES = "localtuya_remote_entities"
+SERVICE_REMOTE_ADD_CODE = "remote_add_code"
 
 
 def flow_schema(dps):
@@ -157,6 +160,11 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         self._attr_supported_features = (
             RemoteEntityFeature.LEARN_COMMAND | RemoteEntityFeature.DELETE_COMMAND
         )
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Stop exposing this remote to the remote_add_code service."""
+        await super().async_will_remove_from_hass()
+        self.hass.data.get(DATA_REMOTE_ENTITIES, set()).discard(self)
 
     @property
     def _ir_control_type(self):
@@ -454,12 +462,16 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
 async def async_setup_services(hass: HomeAssistant, entities: list[LocalTuyaRemote]):
     """Setup remote services."""
+    # Entities of every config entry share one service, which is registered once.
+    hass.data.setdefault(DATA_REMOTE_ENTITIES, set()).update(entities)
+    if hass.services.has_service("localtuya", SERVICE_REMOTE_ADD_CODE):
+        return
 
     async def _handle_add_key(call: ServiceCall):
         """Handle add remote key service's action."""
         entity = None
-        for ent in entities:
-            if call.data.get("target") == ent.device_entry.id:
+        for ent in hass.data.get(DATA_REMOTE_ENTITIES, ()):
+            if ent.device_entry and call.data.get("target") == ent.device_entry.id:
                 entity = ent
         if not entity:
             raise NoEntitySpecifiedError("The targeted device could not be found")
@@ -478,7 +490,7 @@ async def async_setup_services(hass: HomeAssistant, entities: list[LocalTuyaRemo
                 "Ensure that the fields for Raw Base64 code or header/key are valid"
             )
 
-    hass.services.async_register("localtuya", "remote_add_code", _handle_add_key)
+    hass.services.async_register("localtuya", SERVICE_REMOTE_ADD_CODE, _handle_add_key)
 
 
 async_setup_entry = partial(

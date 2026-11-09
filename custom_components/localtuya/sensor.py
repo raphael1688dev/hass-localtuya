@@ -23,6 +23,7 @@ from homeassistant.const import (
     UnitOfElectricPotential,
     UnitOfPower,
 )
+from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
 
 from .entity import LocalTuyaEntity, async_setup_entry
@@ -101,10 +102,9 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
         state = self.dp_value(self._dp_id)
 
         if self.is_base64(state):
-            if not self._has_sub_entities:
-                self.hass.loop.call_soon_threadsafe(
-                    self.hass.async_create_task, self.__create_sub_sensors()
-                )
+            # Sub-sensors have no add-entities callback and never spawn their own.
+            if not self._has_sub_entities and self.componet_add_entities:
+                self.__create_sub_sensors()
 
             if None not in (
                 sub_sensor := getattr(self, "_attr_sub_sensor", None),
@@ -144,7 +144,8 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
         power = (buf[7] | buf[6] << 8) / 1000
         return {ATTR_VOLTAGE: voltage, ATTR_CURRENT: current, ATTR_POWER: power}
 
-    async def __create_sub_sensors(self):
+    @callback
+    def __create_sub_sensors(self):
         """Create sub entities for voltage, current and power and hide this parent sensor."""
         sub_entities = []
 
