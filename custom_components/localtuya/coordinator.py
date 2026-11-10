@@ -421,18 +421,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     async def _async_refresh(self, _now):
         if self.connected:
             self.debug("Refreshing dps for device")
+            # This a workaround for >= 3.4 devices, since there is an issue on waiting for the correct seqno
             try:
-                if self.is_subdevice and self._device_config.sleep_time <= 0:
-                    # Gateways answer DP_QUERY for a sub-device (TuyaOS dp_query callback),
-                    # UPDATEDPS isn't forwarded by all of them, which left e.g. Zigbee
-                    # socket power readings stale until the Tuya app queried the device.
-                    # Sleeping sub-devices keep UPDATEDPS: a DP_QUERY they can't answer
-                    # times out, and a timeout aborts every pending reply on the gateway.
-                    if status := await self._interface.status(cid=self._node_id):
-                        self.status_updated(status)
-                else:
-                    # This a workaround for >= 3.4 devices, since there is an issue on waiting for the correct seqno
-                    await self._interface.update_dps(cid=self._node_id)
+                await self._interface.update_dps(cid=self._node_id)
             except TimeoutError:
                 pass
 
