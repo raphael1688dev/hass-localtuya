@@ -230,19 +230,15 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         )
         if self._device.is_subdevice and self._device.id != self._device.gateway.id:
             gateway_identifier = (DOMAIN, f"local_{self._device.gateway.id}")
-            if hasattr(dr, "async_get_device_id_by_identifier"):
-                try:
-                    device_info["via_device_id"] = dr.async_get_device_id_by_identifier(
-                        self.hass,
-                        gateway_identifier,
-                        config_entry_id=self._device._entry.entry_id,
-                    )
-                except ValueError:
-                    # The gateway is not registered (yet), link it on a later setup.
-                    pass
-            else:
-                # Backwards compatibility with Home Assistant < 2026.8.
-                device_info["via_device"] = gateway_identifier
+            try:
+                device_info["via_device_id"] = dr.async_get_device_id_by_identifier(
+                    self.hass,
+                    gateway_identifier,
+                    config_entry_id=self._device._entry.entry_id,
+                )
+            except ValueError:
+                # The gateway is not registered (yet), link it on a later setup.
+                pass
         return device_info
 
     @property

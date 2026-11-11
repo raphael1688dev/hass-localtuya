@@ -26,7 +26,7 @@ from homeassistant.const import (
     SERVICE_RELOAD,
 )
 from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import ConfigEntryError, HomeAssistantError
 from homeassistant.helpers.event import async_track_time_interval
 
 from .coordinator import TuyaDevice, HassLocalTuyaData, TuyaCloudApi
@@ -218,7 +218,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
 
-async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     """Migrate old entries merging all of them in one."""
     new_version = ENTRIES_VERSION
     stored_entries = hass.config_entries.async_entries(DOMAIN)
@@ -324,18 +324,13 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         new_version,
     )
 
-    return True
 
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Set up LocalTuya integration from a config entry."""
     if entry.version < ENTRIES_VERSION:
-        _LOGGER.debug(
-            "Skipping setup for entry %s since its version (%s) is old",
-            entry.entry_id,
-            entry.version,
+        raise ConfigEntryError(
+            f"Entry {entry.entry_id} was not migrated: version {entry.version} is old"
         )
-        return
 
     region = entry.data[CONF_REGION]
     client_id = entry.data[CONF_CLIENT_ID]
@@ -414,20 +409,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     entry.async_on_unload(_run_async_listen(hass, entry))
     _LOGGER.info(f"{entry.title}: Setup completed")
-    return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Unloading the Tuya platforms."""
-    # Unload the platforms.
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        entry, PLATFORMS.values()
-    )
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-        _LOGGER.info("Unload completed")
-
-    return unload_ok
+    # Unload the platforms, a failure raises and leaves the entry data in place.
+    await hass.config_entries.async_unload_platforms_or_raise(entry, PLATFORMS.values())
+    hass.data[DOMAIN].pop(entry.entry_id, None)
+    _LOGGER.info("Unload completed")
 
 
 async def update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -498,11 +487,7 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
     @callback
     def _event_filter(data: dr.EventDeviceRegistryUpdatedData) -> bool:
         device_reg = dr.async_get(hass).async_get(data["device_id"])
-        if hasattr(device_reg, "config_entry_id"):
-            is_entry = device_reg.config_entry_id == entry.entry_id
-        else:
-            # Backwards compatibility with Home Assistant < 2026.8.
-            is_entry = device_reg and entry.entry_id in device_reg.config_entries
+        is_entry = device_reg and device_reg.config_entry_id == entry.entry_id
         return data["action"] == "update" and is_entry
 
     async def device_state_changed(event: Event[dr.EventDeviceRegistryUpdatedData]):

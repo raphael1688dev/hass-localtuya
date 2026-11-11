@@ -2,14 +2,9 @@
 
 from unittest.mock import AsyncMock
 from homeassistant.components.number import SERVICE_SET_VALUE
-
-try:
-    from homeassistant.components.number import async_set_value as number_set_value
-except ImportError:
-    # Home Assistant >= 2026.x moved the set_value service handler.
-    from homeassistant.components.number.services import (
-        _async_set_value as number_set_value,
-    )
+from homeassistant.components.number.services import (
+    _async_set_value as number_set_value,
+)
 from homeassistant.core import ServiceCall
 from . import *
 from custom_components.localtuya.number import (
