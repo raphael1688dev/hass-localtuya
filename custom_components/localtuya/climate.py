@@ -183,8 +183,6 @@ def config_unit(unit):
 class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     """Tuya climate device."""
 
-    _enable_turn_on_off_backwards_compatibility = False
-
     def __init__(
         self,
         device,

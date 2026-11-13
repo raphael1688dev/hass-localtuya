@@ -190,8 +190,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
 
+    @callback
     def _shutdown(event):
         """Clean up resources when shutting down."""
+        # Runs in the event loop: discovery.close() closes asyncio transports.
         discovery.close()
 
     hass.services.async_register(DOMAIN, SERVICE_RELOAD, _handle_reload)

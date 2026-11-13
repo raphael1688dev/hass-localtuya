@@ -91,7 +91,6 @@ def config_unit(unit):
 class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
     """Tuya WaterHeater device."""
 
-    _enable_turn_on_off_backwards_compatibility = False
     _attr_current_operation = False
 
     def __init__(

@@ -47,3 +47,13 @@ async def test_switch():
     assert entity_sw1.state == "on"
     assert entity_sw2.state == "off"
     assert entity_sw2.entity_category == EntityCategory.CONFIG
+
+
+@pytest.mark.parametrize("version, expected", [("3.3", "3.3"), (3.4, "3.4"), (3, "3")])
+async def test_device_info_sw_version_is_string(version, expected):
+    """A protocol version stored as a number is passed to the registry as a string."""
+    config = {DEVICE_NAME: {**CONFIG[DEVICE_NAME], "protocol_version": version}}
+    device = await init(config, SWITCH_DOMAIN, LocalTuyaSwitch)
+    entity_sw1, *_ = get_entites(device)
+
+    assert entity_sw1.device_info["sw_version"] == expected

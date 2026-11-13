@@ -122,7 +122,6 @@ class LocalTuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
             VacuumEntityFeature.START
             | VacuumEntityFeature.PAUSE
             | VacuumEntityFeature.STOP
-            | VacuumEntityFeature.STATUS
             | VacuumEntityFeature.STATE
         )
 
